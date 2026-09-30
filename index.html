@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Ti, Mi Amor ❤️</title>
+    <meta name="description" content="Una carta de amor especial">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        body {
+            background: #020111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* ========== CANVAS ========== */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        #rain-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ========== FIREFLIES ========== */
+        .firefly {
+            position: fixed;
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: #ffe88a;
+            box-shadow: 0 0 6px 2px rgba(255,232,138,0.6), 0 0 12px 4px rgba(255,200,50,0.3);
+            z-index: 2;
+            pointer-events: none;
+            animation: fireflyFloat 8s ease-in-out infinite, fireflyGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes fireflyFloat {
+            0%, 100% { transform: translate(0,0); }
+            25% { transform: translate(30px,-20px); }
+            50% { transform: translate(-15px,-40px); }
+            75% { transform: translate(20px,10px); }
+        }
+
+        @keyframes fireflyGlow {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 1; }
+        }
+
+        /* ========== AUTO HEARTS ========== */
+        .heart-particle {
+            position: fixed;
+            z-index: 15;
+            pointer-events: none;
+            opacity: 0;
+            animation: heartRise 7s ease-out forwards;
+        }
+
+        @keyframes heartRise {
+            0%   { opacity: 0; transform: translateY(0) scale(0.3) rotate(0deg); }
+            8%   { opacity: 0.7; transform: translateY(-15px) scale(0.7) rotate(-5deg); }
+            50%  { opacity: 0.5; transform: translateY(-120px) scale(0.9) rotate(10deg); }
+            100% { opacity: 0; transform: translateY(-280px) scale(1.1) rotate(20deg); }
+        }
+
+        /* ========== ENVELOPE ========== */
+        .envelope-scene {
+            position: relative;
+            z-index: 10;
+            perspective: 1200px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope-scene:hover {
+            transform: scale(1.02);
+        }
+
+        .envelope-scene.opened:hover {
+            transform: none;
+        }
+
+        .envelope-container {
+            position: relative;
+            width: 340px;
+            height: 220px;
+            transition: transform 0.6s ease;
+        }
+
+        /* Envelope back */
+        .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #c9a96e 0%, #b8944f 50%, #a07b3a 100%);
+            border-radius: 6px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 -3px 8px rgba(0,0,0,0.15);
+            z-index: 1;
+        }
+
+        /* Envelope texture lines */
+        .envelope-back::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 14px, rgba(139,90,43,0.06) 14px, rgba(139,90,43,0.06) 15px);
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        /* Envelope front */
+        .envelope-front {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(165deg, #d4b078 0%, #c4a060 50%, #b08840 100%);
+            border-radius: 0 0 6px 6px;
+            z-index: 3;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+        }
+
+        .envelope-front::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 14px, rgba(139,90,43,0.05) 14px, rgba(139,90,43,0.05) 15px);
+            pointer-events: none;
+        }
+
+        /* Envelope side triangles (the V shape) */
+        .envelope-left, .envelope-right {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 2;
+            clip-path: polygon(0 0, 100% 50%, 0 100%);
+        }
+
+        .envelope-left {
+            left: 0;
+            background: linear-gradient(135deg, #cca462 0%, #ba9350 100%);
+        }
+
+        .envelope-right {
+            right: 0;
+            clip-path: polygon(100% 0, 0 50%, 100% 100%);
+            background: linear-gradient(225deg, #c89e58 0%, #b5904a 100%);
+        }
+
+        /* Flap (top triangle) */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 55%;
+            z-index: 4;
+            transform-origin: top center;
+            transform: rotateX(0deg);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .envelope-flap-inner {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #d4b078 0%, #c4a060 50%, #b99050 100%);
+            clip-path: polygon(0 0, 50% 100%, 100% 0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .envelope-scene.opened .envelope-flap {
+            transform: rotateX(-180deg);
+        }
+
+        /* Wax seal on envelope */
+        .envelope-seal {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 55px;
+            height: 55px;
+            z-index: 5;
+            transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
+        }
+
+        .envelope-scene.opened .envelope-seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5) rotate(20deg);
+        }
+
+        .envelope-seal svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+
+        /* Click hint */
+        .click-hint {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(245,230,200,0.6);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.9rem;
+            font-style: italic;
+            white-space: nowrap;
+            animation: hintPulse 2s ease-in-out infinite;
+            transition: opacity 0.5s ease;
+        }
+
+        .envelope-scene.opened .click-hint {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
+        /* ========== LETTER (appears after envelope opens) ========== */
+        .letter-wrapper {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .letter-wrapper.visible {
+            pointer-events: auto;
+            opacity: 1;
+        }
+
+        .letter-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 1, 17, 0.5);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+
+        .scroll-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 660px;
+            max-height: 88vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139,90,43,0.4) transparent;
+            animation: letterSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .scroll-wrapper::-webkit-scrollbar { width: 6px; }
+        .scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+        .scroll-wrapper::-webkit-scrollbar-thumb { background: rgba(139,90,43,0.4); border-radius: 3px; }
+
+        @keyframes letterSlideUp {
+            0% { opacity: 0; transform: translateY(80px) scale(0.85); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ========== PAPYRUS WITH WAVY EDGES ========== */
+        .letter-container {
+            padding: 10px;
+        }
+
+        .papyrus-svg-wrapper {
+            position: relative;
+            filter: drop-shadow(0 8px 30px rgba(0,0,0,0.5)) drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+        }
+
+        /* The actual SVG shapes the papyrus */
+        .papyrus-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+
+        .papyrus-content {
+            position: relative;
+            z-index: 2;
+            padding: 60px 50px 55px;
+        }
+
+        /* Papyrus texture overlay via pseudo-elements on wrapper */
+        .papyrus-svg-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139,90,43,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 20%, rgba(120,70,30,0.09) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 80%, rgba(100,60,20,0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .papyrus-svg-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to right, rgba(139,90,43,0.18) 0%, transparent 10%),
+                linear-gradient(to left,  rgba(139,90,43,0.14) 0%, transparent 8%),
+                linear-gradient(to bottom, rgba(139,90,43,0.12) 0%, transparent 6%),
+                linear-gradient(to top,    rgba(120,70,30,0.2)  0%, transparent 12%);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Ink blots */
+        .ink-blot {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(60,30,10,0.12) 0%, transparent 70%);
+            z-index: 4;
+            pointer-events: none;
+        }
+        .ink-blot-1 { width: 40px; height: 35px; bottom: 80px; left: 55px; }
+        .ink-blot-2 { width: 25px; height: 20px; top: 110px; right: 85px; }
+        .ink-blot-3 { width: 18px; height: 22px; bottom: 140px; right: 120px; }
+
+        /* ========== LETTER TEXT ========== */
+        .letter-content {
+            position: relative;
+            z-index: 5;
+        }
+
+        .letter-date {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            color: rgba(100,60,25,0.55);
+            text-align: right;
+            margin-bottom: 28px;
+            letter-spacing: 0.5px;
+        }
+
+        .letter-greeting {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.5rem;
+            color: #5a3015;
+            margin-bottom: 32px;
+            text-shadow: 1px 1px 2px rgba(90,48,21,0.12);
+        }
+
+        .letter-body p {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.35rem;
+            line-height: 2;
+            color: #3d2210;
+            margin-bottom: 24px;
+            text-align: justify;
+            text-indent: 2em;
+        }
+
+        .letter-body em {
+            font-style: italic;
+            color: #6b3518;
+            font-weight: 600;
+        }
+
+        .letter-signature {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.8rem;
+            color: #5a3015;
+            text-align: right;
+            margin-top: 38px;
+        }
+
+        .letter-closing {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.15rem;
+            color: rgba(90,48,21,0.65);
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        /* Decorative flourish divider */
+        .flourish-divider {
+            text-align: center;
+            margin: 15px 0 10px;
+            color: rgba(139,90,43,0.3);
+            font-size: 1.4rem;
+            letter-spacing: 8px;
+        }
+
+        /* Corner flourishes */
+        .corner-flourish {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            z-index: 4;
+            opacity: 0.3;
+        }
+        .cf-tl { top: 15px; left: 15px; }
+        .cf-tr { top: 15px; right: 15px; transform: scaleX(-1); }
+        .cf-bl { bottom: 15px; left: 15px; transform: scaleY(-1); }
+        .cf-br { bottom: 15px; right: 15px; transform: scale(-1,-1); }
+
+        .corner-flourish svg { width: 100%; height: 100%; }
+
+        /* ========== CLOSE BUTTON ========== */
+        .letter-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 30;
+            background: rgba(90,48,21,0.15);
+            border: 1px solid rgba(90,48,21,0.25);
+            color: rgba(90,48,21,0.5);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .letter-close:hover {
+            background: rgba(90,48,21,0.25);
+            color: rgba(90,48,21,0.8);
+        }
+
+        /* ========== SOUND BUTTON ========== */
+        .music-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            background: rgba(245,230,200,0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(245,230,200,0.18);
+            color: #f5e6c8;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .music-hint:hover {
+            background: rgba(245,230,200,0.22);
+            transform: scale(1.05);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 600px) {
+            .envelope-container { width: 280px; height: 180px; }
+            .papyrus-content { padding: 45px 28px 40px; }
+            .letter-greeting { font-size: 1.9rem; }
+            .letter-body p { font-size: 1.15rem; line-height: 1.85; }
+            .letter-signature { font-size: 1.5rem; }
+            .corner-flourish { width: 45px; height: 45px; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="rain-canvas"></canvas>
+
+<!-- Fireflies -->
+<div class="firefly" style="top:15%;left:10%;animation-delay:0s,0.5s;"></div>
+<div class="firefly" style="top:60%;left:5%;animation-delay:2s,1s;"></div>
+<div class="firefly" style="top:30%;left:85%;animation-delay:4s,2s;"></div>
+<div class="firefly" style="top:70%;left:90%;animation-delay:1s,0s;"></div>
+<div class="firefly" style="top:45%;left:15%;animation-delay:3s,1.5s;"></div>
+<div class="firefly" style="top:20%;left:70%;animation-delay:5s,2.5s;"></div>
+<div class="firefly" style="top:80%;left:45%;animation-delay:2.5s,0.8s;"></div>
+<div class="firefly" style="top:55%;left:75%;animation-delay:6s,1.2s;"></div>
+
+<!-- ========== ENVELOPE ========== -->
+<div class="envelope-scene" id="envelopeScene" onclick="openEnvelope()">
+    <div class="envelope-container">
+        <div class="envelope-back"></div>
+        <div class="envelope-left"></div>
+        <div class="envelope-right"></div>
+        <div class="envelope-front"></div>
+        <div class="envelope-flap">
+            <div class="envelope-flap-inner"></div>
+        </div>
+        <div class="envelope-seal">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="sealG" cx="40%" cy="35%" r="60%">
+                        <stop offset="0%" stop-color="#c0392b"/>
+                        <stop offset="40%" stop-color="#a93226"/>
+                        <stop offset="100%" stop-color="#7b241c"/>
+                    </radialGradient>
+                </defs>
+                <path d="M50,5 Q65,2 75,12 Q88,10 90,25 Q98,35 92,48 Q98,60 90,72 Q88,88 75,88 Q65,98 50,95 Q35,98 25,88 Q12,88 10,72 Q2,60 8,48 Q2,35 10,25 Q12,10 25,12 Q35,2 50,5Z" fill="url(#sealG)"/>
+                <path d="M50,40 C50,35 43,28 36,32 C28,36 30,46 50,60 C70,46 72,36 64,32 C57,28 50,35 50,40Z" fill="rgba(255,255,255,0.22)"/>
+                <ellipse cx="38" cy="30" rx="8" ry="5" fill="rgba(255,255,255,0.1)" transform="rotate(-20 38 30)"/>
+            </svg>
+        </div>
+    </div>
+    <div class="click-hint">✦ Toca para abrir ✦</div>
+</div>
+
+<!-- ========== LETTER OVERLAY ========== -->
+<div class="letter-wrapper" id="letterWrapper">
+    <div class="letter-overlay" onclick="closeLetter()"></div>
+    <div class="scroll-wrapper">
+        <div class="letter-container">
+            <div class="papyrus-svg-wrapper" id="papyrusWrapper">
+                <!-- SVG papyrus background is injected via JS for dynamic sizing -->
+                <svg class="papyrus-bg" id="papyrusBg" preserveAspectRatio="none"></svg>
+
+                <!-- Corner flourishes -->
+                <div class="corner-flourish cf-tl"><svg viewBox="0 0 100 100"><path d="M5,5 Q5,50 30,60 Q10,40 15,20 Q20,5 40,5 Q25,15 20,30 Q15,50 50,70 Q20,55 10,35 Q5,25 5,5Z" fill="none" stroke="#8b5a2b" stroke-width="1.5" opacity="0.5"/><path d="M5,5 C15,15 10,30 25,35 C15,30 12,20 5,5Z" fill="#8b5a2b" opacity="0.15"/></svg></div>
+                <div class="corner-flourish cf-tr"><svg viewBox="0 0 100 100"><path d="M5,5 Q5,50 30,60 Q10,40 15,20 Q20,5 40,5 Q25,15 20,30 Q15,50 50,70 Q20,55 10,35 Q5,25 5,5Z" fill="none" stroke="#8b5a2b" stroke-width="1.5" opacity="0.5"/><path d="M5,5 C15,15 10,30 25,35 C15,30 12,20 5,5Z" fill="#8b5a2b" opacity="0.15"/></svg></div>
+                <div class="corner-flourish cf-bl"><svg viewBox="0 0 100 100"><path d="M5,5 Q5,50 30,60 Q10,40 15,20 Q20,5 40,5 Q25,15 20,30 Q15,50 50,70 Q20,55 10,35 Q5,25 5,5Z" fill="none" stroke="#8b5a2b" stroke-width="1.5" opacity="0.5"/><path d="M5,5 C15,15 10,30 25,35 C15,30 12,20 5,5Z" fill="#8b5a2b" opacity="0.15"/></svg></div>
+                <div class="corner-flourish cf-br"><svg viewBox="0 0 100 100"><path d="M5,5 Q5,50 30,60 Q10,40 15,20 Q20,5 40,5 Q25,15 20,30 Q15,50 50,70 Q20,55 10,35 Q5,25 5,5Z" fill="none" stroke="#8b5a2b" stroke-width="1.5" opacity="0.5"/><path d="M5,5 C15,15 10,30 25,35 C15,30 12,20 5,5Z" fill="#8b5a2b" opacity="0.15"/></svg></div>
+
+                <!-- Ink blots -->
+                <div class="ink-blot ink-blot-1"></div>
+                <div class="ink-blot ink-blot-2"></div>
+                <div class="ink-blot ink-blot-3"></div>
+
+                <!-- Close button -->
+                <button class="letter-close" onclick="closeLetter()" title="Cerrar">✕</button>
+
+                <!-- Letter text -->
+                <div class="papyrus-content">
+                    <div class="letter-content">
+                        <p class="letter-date">30 de Septiembre, 2026</p>
+                        <h1 class="letter-greeting">Mi amor,</h1>
+                        <div class="letter-body">
+                            <p>
+                                Si me preguntaran por mi momento favorito del año, pensaría en lo pesado
+                                y estresante que ha sido todo este tiempo... pero le diría a cualquiera,
+                                sin dudar un solo segundo, que el mejor momento fue cuando tú y yo nos
+                                convertimos en <em>nosotros</em>.
+                            </p>
+                            <p>
+                                Entre tanto caos y días difíciles, tú fuiste y sigues siendo lo más bonito
+                                que me pasó. Elegirte a ti salvó completamente mi año y le dio sentido a todo.
+                                Gracias por estar a mi lado, y por hacerme tan feliz.
+                                Te amo muchísimo, mi niña hermosaaaa.
+                            </p>
+                        </div>
+                        <div class="flourish-divider">~ ♥ ~</div>
+                        <div class="letter-closing" style="margin-top: 20px;">Att,</div>
+                        <div class="letter-signature-container" style="text-align: right; margin-top: 10px; position: relative; display: inline-block; float: right;">
+                            <div class="letter-signature" style="margin-top: 0; font-size: 3.5rem; transform: rotate(-6deg); display: inline-block; padding-right: 15px;">Nahur</div>
+                            <!-- Trazo tipo firma -->
+                            <svg viewBox="0 0 120 40" style="position: absolute; bottom: -5px; left: -10px; width: 130%; height: 40px; pointer-events: none;">
+                                <path d="M5,25 Q30,10 60,25 T115,20" fill="none" stroke="rgba(90,48,21,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M40,25 L80,25" fill="none" stroke="rgba(90,48,21,0.4)" stroke-width="1" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div style="clear: both;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// ==================== CANVAS SETUP ====================
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+const rainCanvas = document.getElementById('rain-canvas');
+const rainCtx = rainCanvas.getContext('2d');
+let W, H;
+
+function resizeCanvases() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    bgCanvas.width = W;
+    bgCanvas.height = H;
+    rainCanvas.width = W;
+    rainCanvas.height = H;
+}
+resizeCanvases();
+window.addEventListener('resize', () => { resizeCanvases(); generateStars(); });
+
+// ==================== STARS ====================
+let stars = [];
+function generateStars() {
+    stars = [];
+    const count = Math.floor((W * H) / 1800);
+    for (let i = 0; i < count; i++) {
+        stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.65,
+            r: Math.random() * 1.8 + 0.3,
+            brightness: Math.random(),
+            twinkleSpeed: Math.random() * 0.02 + 0.005,
+            twinkleOffset: Math.random() * Math.PI * 2
+        });
+    }
+}
+generateStars();
+
+// ==================== SHOOTING STARS ====================
+let shootingStars = [];
+function spawnShootingStar() {
+    shootingStars.push({
+        x: Math.random() * W * 0.7,
+        y: Math.random() * H * 0.3,
+        length: Math.random() * 80 + 50,
+        speed: Math.random() * 8 + 6,
+        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+        opacity: 1, life: 0,
+        maxLife: 40 + Math.random() * 30
+    });
+}
+
+// ==================== SCENE DRAWING ====================
+function drawMoon(ctx) {
+    const mx = W * 0.82, my = H * 0.12, mr = 35;
+    const glowGrad = ctx.createRadialGradient(mx, my, mr * 0.5, mx, my, mr * 4);
+    glowGrad.addColorStop(0, 'rgba(200,210,240,0.15)');
+    glowGrad.addColorStop(0.5, 'rgba(150,170,220,0.06)');
+    glowGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath(); ctx.arc(mx, my, mr * 4, 0, Math.PI * 2); ctx.fill();
+
+    const moonGrad = ctx.createRadialGradient(mx - 8, my - 8, 2, mx, my, mr);
+    moonGrad.addColorStop(0, '#f0f0f5');
+    moonGrad.addColorStop(0.7, '#d8dce8');
+    moonGrad.addColorStop(1, '#b8c0d5');
+    ctx.fillStyle = moonGrad;
+    ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = 'rgba(10,20,50,0.7)';
+    ctx.beginPath(); ctx.arc(mx + 12, my - 5, mr * 0.85, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawMountains(ctx) {
+    ctx.fillStyle = 'rgba(8,18,35,0.9)';
+    ctx.beginPath(); ctx.moveTo(0, H * 0.6);
+    for (let x = 0; x <= W; x += 3) {
+        ctx.lineTo(x, H * 0.6 - Math.sin(x * 0.003) * 60 - Math.sin(x * 0.007 + 1) * 30 - Math.sin(x * 0.001) * 40);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = 'rgba(5,12,25,0.95)';
+    ctx.beginPath(); ctx.moveTo(0, H * 0.68);
+    for (let x = 0; x <= W; x += 3) {
+        ctx.lineTo(x, H * 0.68 - Math.sin(x * 0.004 + 2) * 45 - Math.sin(x * 0.009) * 20 - Math.sin(x * 0.002 + 3) * 30);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+}
+
+function drawTree(ctx, x, baseY, height, width) {
+    ctx.fillStyle = '#0a0f0a';
+    ctx.fillRect(x - width * 0.08, baseY - height * 0.3, width * 0.16, height * 0.35);
+    for (let i = 0; i < 5; i++) {
+        const layerY = baseY - height * 0.25 - (height * 0.75 * (i / 5));
+        const layerW = width * (1 - i * 0.15) * 0.6;
+        const layerH = height * 0.28;
+        ctx.fillStyle = `rgba(${5+i*2},${15+i*3},${8+i*2},${0.95 - i*0.05})`;
+        ctx.beginPath();
+        ctx.moveTo(x, layerY - layerH);
+        ctx.lineTo(x + layerW, layerY);
+        ctx.lineTo(x - layerW, layerY);
+        ctx.closePath(); ctx.fill();
+    }
+}
+
+function drawForest(ctx) {
+    const groundY = H * 0.78;
+    const groundGrad = ctx.createLinearGradient(0, groundY, 0, H);
+    groundGrad.addColorStop(0, '#080e08');
+    groundGrad.addColorStop(0.5, '#060a06');
+    groundGrad.addColorStop(1, '#030503');
+    ctx.fillStyle = groundGrad;
+    ctx.fillRect(0, groundY, W, H - groundY);
+
+    const backCount = Math.floor(W / 45);
+    for (let i = 0; i < backCount; i++) {
+        const tx = (i / backCount) * W + Math.sin(i * 3.7) * 20;
+        drawTree(ctx, tx, groundY - 5, 80 + Math.sin(i * 2.3) * 25, 35);
+    }
+    const frontCount = Math.floor(W / 70);
+    for (let i = 0; i < frontCount; i++) {
+        const tx = (i / frontCount) * W + Math.sin(i * 5.1) * 30;
+        if (Math.abs(tx - W * 0.3) < 100) continue;
+        drawTree(ctx, tx, groundY, 120 + Math.sin(i * 1.7) * 40, 50);
+    }
+}
+
+// Smoke
+let smokeParticles = [];
+for (let i = 0; i < 15; i++) {
+    smokeParticles.push({ x:0, y:0, r:Math.random()*8+4, opacity:Math.random()*0.3, vx:Math.random()*0.3-0.1, vy:-(Math.random()*0.5+0.3), life:Math.random() });
+}
+
+function drawCabin(ctx) {
+    const cx = W * 0.3, cy = H * 0.78, cw = 100, ch = 65;
+    ctx.fillStyle = '#1a1008';
+    ctx.fillRect(cx - cw/2, cy - ch, cw, ch);
+    ctx.strokeStyle = 'rgba(30,20,8,0.6)'; ctx.lineWidth = 0.5;
+    for (let i = 1; i < 6; i++) {
+        ctx.beginPath(); ctx.moveTo(cx-cw/2, cy-ch+i*(ch/6)); ctx.lineTo(cx+cw/2, cy-ch+i*(ch/6)); ctx.stroke();
+    }
+    ctx.fillStyle = '#120a04';
+    ctx.beginPath(); ctx.moveTo(cx, cy-ch-40); ctx.lineTo(cx+cw/2+15, cy-ch+5); ctx.lineTo(cx-cw/2-15, cy-ch+5); ctx.closePath(); ctx.fill();
+
+    const wx=cx-8, wy=cy-ch+20, ww=20, wh=25;
+    const glowGrad = ctx.createRadialGradient(wx+ww/2,wy+wh/2,5,wx+ww/2,wy+wh/2,60);
+    glowGrad.addColorStop(0,'rgba(255,180,60,0.2)'); glowGrad.addColorStop(0.5,'rgba(255,150,30,0.08)'); glowGrad.addColorStop(1,'transparent');
+    ctx.fillStyle = glowGrad; ctx.fillRect(wx-40,wy-30,ww+80,wh+60);
+    ctx.fillStyle = 'rgba(255,190,80,0.7)'; ctx.fillRect(wx,wy,ww,wh);
+    ctx.strokeStyle='#1a1008'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(wx+ww/2,wy); ctx.lineTo(wx+ww/2,wy+wh); ctx.moveTo(wx,wy+wh/2); ctx.lineTo(wx+ww,wy+wh/2); ctx.stroke();
+    ctx.fillStyle='#140c05'; ctx.fillRect(cx+12,cy-42,18,42);
+    ctx.fillStyle='rgba(180,140,60,0.4)'; ctx.beginPath(); ctx.arc(cx+26,cy-20,2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#120a04'; ctx.fillRect(cx+15,cy-ch-35,14,25);
+
+    // Smoke
+    smokeParticles.forEach(p => {
+        const px = cx+22+p.x+Math.sin(p.life*3)*8, py = cy-ch-35+p.y;
+        const o = p.opacity*(1-p.life*0.7);
+        if (o > 0.01) {
+            ctx.fillStyle=`rgba(150,160,180,${o})`;
+            ctx.beginPath(); ctx.arc(px,py,p.r*(1+p.life),0,Math.PI*2); ctx.fill();
+        }
+    });
+}
+
+function updateSmoke() {
+    smokeParticles.forEach(p => {
+        p.life += 0.005;
+        p.x += p.vx + Math.sin(Date.now()*0.001+p.r)*0.15;
+        p.y += p.vy;
+        if (p.life > 1) { p.life=0; p.x=0; p.y=0; p.opacity=Math.random()*0.3; p.r=Math.random()*8+4; }
+    });
+}
+
+function drawStars(time) {
+    stars.forEach(s => {
+        const twinkle = Math.sin(time * s.twinkleSpeed + s.twinkleOffset);
+        const alpha = 0.4 + twinkle * 0.4 + s.brightness * 0.2;
+        bgCtx.fillStyle = `rgba(220,230,255,${Math.max(0.1,alpha)})`;
+        bgCtx.beginPath(); bgCtx.arc(s.x, s.y, s.r, 0, Math.PI*2); bgCtx.fill();
+        if (s.r > 1.2) {
+            bgCtx.fillStyle = `rgba(200,215,255,${alpha*0.15})`;
+            bgCtx.beginPath(); bgCtx.arc(s.x, s.y, s.r*3, 0, Math.PI*2); bgCtx.fill();
+        }
+    });
+}
+
+function drawShootingStars() {
+    shootingStars.forEach((ss,idx) => {
+        ss.x += Math.cos(ss.angle)*ss.speed;
+        ss.y += Math.sin(ss.angle)*ss.speed;
+        ss.life++;
+        const progress = ss.life/ss.maxLife;
+        ss.opacity = progress < 0.2 ? progress*5 : (1-progress)*1.25;
+        if (ss.opacity > 0) {
+            const tX=ss.x-Math.cos(ss.angle)*ss.length, tY=ss.y-Math.sin(ss.angle)*ss.length;
+            const grad = bgCtx.createLinearGradient(tX,tY,ss.x,ss.y);
+            grad.addColorStop(0,'transparent'); grad.addColorStop(1,`rgba(255,255,255,${ss.opacity})`);
+            bgCtx.strokeStyle=grad; bgCtx.lineWidth=1.5;
+            bgCtx.beginPath(); bgCtx.moveTo(tX,tY); bgCtx.lineTo(ss.x,ss.y); bgCtx.stroke();
+        }
+        if (ss.life > ss.maxLife) shootingStars.splice(idx,1);
+    });
+}
+
+// ==================== RAIN ====================
+let raindrops = [];
+for (let i = 0; i < 200; i++) {
+    raindrops.push({ x:Math.random()*2000, y:Math.random()*2000, length:Math.random()*15+8, speed:Math.random()*4+3, opacity:Math.random()*0.15+0.05, wind:1.5 });
+}
+
+function drawRain() {
+    rainCtx.clearRect(0,0,W,H);
+    raindrops.forEach(r => {
+        rainCtx.strokeStyle=`rgba(174,194,224,${r.opacity})`;
+        rainCtx.lineWidth=0.8;
+        rainCtx.beginPath(); rainCtx.moveTo(r.x,r.y); rainCtx.lineTo(r.x+r.wind*2,r.y+r.length); rainCtx.stroke();
+        r.y += r.speed; r.x += r.wind;
+        if (r.y > H) { r.y=-r.length; r.x=Math.random()*W; }
+        if (r.x > W) r.x = 0;
+    });
+}
+
+// ==================== MAIN SCENE RENDER ====================
+function drawScene(time) {
+    bgCtx.clearRect(0,0,W,H);
+    const skyGrad = bgCtx.createLinearGradient(0,0,0,H);
+    skyGrad.addColorStop(0,'#020111'); skyGrad.addColorStop(0.25,'#03132a');
+    skyGrad.addColorStop(0.4,'#0a1a3a'); skyGrad.addColorStop(0.55,'#0d2240');
+    skyGrad.addColorStop(0.7,'#0c1c30'); skyGrad.addColorStop(0.85,'#091520');
+    skyGrad.addColorStop(1,'#050d15');
+    bgCtx.fillStyle=skyGrad; bgCtx.fillRect(0,0,W,H);
+
+    bgCtx.fillStyle='rgba(60,20,100,0.04)';
+    bgCtx.beginPath(); bgCtx.ellipse(W*0.3,H*0.15,W*0.3,H*0.12,0,0,Math.PI*2); bgCtx.fill();
+    bgCtx.fillStyle='rgba(20,60,120,0.03)';
+    bgCtx.beginPath(); bgCtx.ellipse(W*0.7,H*0.25,W*0.25,H*0.1,0.3,0,Math.PI*2); bgCtx.fill();
+
+    drawMoon(bgCtx);
+    drawStars(time);
+    drawShootingStars();
+    drawMountains(bgCtx);
+    drawForest(bgCtx);
+    drawCabin(bgCtx);
+    updateSmoke();
+    drawRain();
+}
+
+// ==================== WAVY PAPYRUS SVG ====================
+function buildPapyrusSVG() {
+    const wrapper = document.getElementById('papyrusWrapper');
+    const svg = document.getElementById('papyrusBg');
+    const w = wrapper.offsetWidth;
+    const h = wrapper.offsetHeight;
+
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+
+    // Generate wavy edges
+    const seed = 42;
+    function wave(i, amp, freq, phase) {
+        return Math.sin(i * freq + phase) * amp + Math.cos(i * freq * 1.7 + phase * 0.5) * (amp * 0.4);
+    }
+
+    // Top edge (left to right)
+    let topEdge = '';
+    for (let x = 0; x <= w; x += 4) {
+        const y = 6 + wave(x, 3, 0.04, 0) + wave(x, 1.5, 0.09, 2);
+        topEdge += (x === 0 ? 'M' : 'L') + `${x},${y} `;
+    }
+
+    // Right edge (top to bottom)
+    let rightEdge = '';
+    for (let y = 0; y <= h; y += 4) {
+        const x = w - 5 + wave(y, 3.5, 0.035, 1) + wave(y, 1.8, 0.08, 3);
+        rightEdge += `L${x},${y} `;
+    }
+
+    // Bottom edge (right to left)
+    let bottomEdge = '';
+    for (let x = w; x >= 0; x -= 4) {
+        const y = h - 5 + wave(x, 3, 0.045, 4) + wave(x, 2, 0.07, 1);
+        bottomEdge += `L${x},${y} `;
+    }
+
+    // Left edge (bottom to top)
+    let leftEdge = '';
+    for (let y = h; y >= 0; y -= 4) {
+        const x = 5 + wave(y, 3, 0.04, 2) + wave(y, 1.5, 0.085, 5);
+        leftEdge += `L${x},${y} `;
+    }
+
+    const path = topEdge + rightEdge + bottomEdge + leftEdge + 'Z';
+
+    svg.innerHTML = `
+        <defs>
+            <linearGradient id="papGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f5e6c8"/>
+                <stop offset="15%" stop-color="#f0ddb5"/>
+                <stop offset="30%" stop-color="#e8d0a0"/>
+                <stop offset="45%" stop-color="#f2ddb8"/>
+                <stop offset="60%" stop-color="#e5c99a"/>
+                <stop offset="75%" stop-color="#f0d8aa"/>
+                <stop offset="90%" stop-color="#ecd3a5"/>
+                <stop offset="100%" stop-color="#f4dfb8"/>
+            </linearGradient>
+            <filter id="papTex">
+                <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise" seed="${seed}"/>
+                <feDiffuseLighting in="noise" lighting-color="#f5e6c8" surfaceScale="1.5" result="lit">
+                    <feDistantLight azimuth="135" elevation="50"/>
+                </feDiffuseLighting>
+                <feComposite in="SourceGraphic" in2="lit" operator="arithmetic" k1="0.7" k2="0.3" k3="0.1" k4="0"/>
+            </filter>
+            <clipPath id="papClip">
+                <path d="${path}"/>
+            </clipPath>
+        </defs>
+        <g clip-path="url(#papClip)">
+            <rect width="${w}" height="${h}" fill="url(#papGrad)"/>
+            <rect width="${w}" height="${h}" fill="url(#papGrad)" filter="url(#papTex)" opacity="0.6"/>
+            <!-- Horizontal fiber lines -->
+            ${Array.from({length: Math.floor(h/30)}, (_,i) => {
+                const ly = i * 30 + 15 + wave(i, 2, 0.5, 7);
+                return `<line x1="8" y1="${ly}" x2="${w-8}" y2="${ly + wave(w, 0.8, 0.01, i)}" stroke="rgba(139,90,43,0.04)" stroke-width="0.5"/>`;
+            }).join('')}
+            <!-- Stain spots -->
+            <circle cx="${w*0.15}" cy="${h*0.8}" r="35" fill="rgba(139,90,43,0.04)"/>
+            <circle cx="${w*0.85}" cy="${h*0.15}" r="25" fill="rgba(120,70,30,0.03)"/>
+            <ellipse cx="${w*0.5}" cy="${h*0.92}" rx="60" ry="20" fill="rgba(100,60,20,0.05)"/>
+        </g>
+        <!-- Wavy edge shadow/darkening -->
+        <path d="${path}" fill="none" stroke="rgba(120,80,30,0.15)" stroke-width="3"/>
+    `;
+}
+
+// ==================== ENVELOPE INTERACTION ====================
+let envelopeOpened = false;
+
+// Configuración de audio (pon tu archivo .mp3 en la misma carpeta en GitHub)
+const bgMusic = new Audio('cancion.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.6; // Ajusta el volumen si lo deseas (0.0 a 1.0)
+
+function openEnvelope() {
+    if (envelopeOpened) return;
+    envelopeOpened = true;
+
+    // Reproducir la canción al hacer clic (necesario por las políticas de los navegadores)
+    bgMusic.play().catch(err => console.log("Autoplay bloqueado o archivo no encontrado:", err));
+
+    const scene = document.getElementById('envelopeScene');
+    scene.classList.add('opened');
+
+    // After flap opens, show letter
+    setTimeout(() => {
+        scene.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        scene.style.opacity = '0';
+        scene.style.transform = 'scale(0.8) translateY(-30px)';
+
+        setTimeout(() => {
+            scene.style.display = 'none';
+            const letterW = document.getElementById('letterWrapper');
+            letterW.classList.add('visible');
+            // Build papyrus SVG after visible so dimensions are correct
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    buildPapyrusSVG();
+                });
+            });
+        }, 600);
+    }, 900);
+}
+
+function closeLetter() {
+    const letterW = document.getElementById('letterWrapper');
+    letterW.classList.remove('visible');
+
+    setTimeout(() => {
+        const scene = document.getElementById('envelopeScene');
+        scene.style.display = '';
+        scene.classList.remove('opened');
+        scene.style.opacity = '1';
+        scene.style.transform = '';
+        envelopeOpened = false;
+    }, 600);
+}
+
+// Rebuild papyrus on resize
+window.addEventListener('resize', () => {
+    if (document.getElementById('letterWrapper').classList.contains('visible')) {
+        buildPapyrusSVG();
+    }
+});
+
+// ==================== AUTO HEARTS ====================
+const heartChars = ['❤', '💕', '♥', '💗', '💖', '💓'];
+const heartColors = [
+    'hsl(340, 80%, 60%)', 'hsl(350, 75%, 55%)', 'hsl(330, 70%, 65%)',
+    'hsl(345, 85%, 50%)', 'hsl(355, 80%, 58%)', 'hsl(338, 90%, 62%)'
+];
+
+function spawnAutoHeart() {
+    const heart = document.createElement('div');
+    heart.className = 'heart-particle';
+    heart.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+    heart.style.left = (Math.random() * W) + 'px';
+    heart.style.top = (H * 0.4 + Math.random() * H * 0.5) + 'px';
+    heart.style.fontSize = (10 + Math.random() * 18) + 'px';
+    heart.style.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+    heart.style.animationDuration = (5 + Math.random() * 4) + 's';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 9000);
+}
+
+// Spawn hearts periodically
+setInterval(spawnAutoHeart, 800);
+// Initial burst
+for (let i = 0; i < 5; i++) setTimeout(spawnAutoHeart, i * 300);
+
+
+// ==================== MAIN LOOP ====================
+let frameCount = 0;
+function animate(time) {
+    frameCount++;
+    drawScene(time);
+    if (frameCount % 300 === 0 && Math.random() > 0.4) spawnShootingStar();
+    requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
